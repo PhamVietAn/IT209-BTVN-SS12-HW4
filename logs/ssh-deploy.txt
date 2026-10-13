@@ -1,0 +1,33 @@
+DỮ LIỆU MÔ PHỎNG - KHÔNG PHẢI LOG TRIỂN KHAI TRÊN VPS THẬT
+Tài khoản GitHub: CrouAn244
+VPS minh họa: 203.0.113.24
+Workflow: Build và triển khai Spring Boot lên VPS
+Lượt chạy: 14
+Nhánh: main
+
+2026-10-13 09:15:00 +07:00  build-image: In progress.
+2026-10-13 09:15:01 +07:00  Image: ghcr.io/crouan244/app
+2026-10-13 09:16:20 +07:00  Maven: BUILD SUCCESS
+2026-10-13 09:16:35 +07:00  Đã đẩy ghcr.io/crouan244/app:latest lên GHCR.
+2026-10-13 09:16:35 +07:00  Đã đẩy tag 4d92b3e8c10fa567d2e3b4c5a6d7e8f9012abc34.
+2026-10-13 09:16:36 +07:00  build-image: Success.
+2026-10-13 09:16:37 +07:00  deploy-vps: In progress.
+2026-10-13 09:16:38 +07:00  Run appleboy/ssh-action@v1.0.3
+2026-10-13 09:16:39 +07:00  Kết nối SSH tới VPS thành công.
+2026-10-13 09:16:40 +07:00  Login Succeeded
+2026-10-13 09:16:41 +07:00  latest: Pulling from crouan244/app
+2026-10-13 09:16:45 +07:00  Digest: sha256:7f41d993acfa5d6e52b43c8f09fa8163e2d77031cb519805acd81359a670bb24
+2026-10-13 09:16:45 +07:00  Status: Downloaded newer image for ghcr.io/crouan244/app:latest
+2026-10-13 09:16:46 +07:00  docker stop app: app
+2026-10-13 09:16:47 +07:00  docker rm app: app
+2026-10-13 09:16:48 +07:00  docker run -d --name app --restart unless-stopped -p 8080:8080 ghcr.io/crouan244/app:latest
+2026-10-13 09:16:48 +07:00  5bc4e77109da8a79d616955d73972fc96be415a1e9e0bb462e31d32ec93dbb50
+2026-10-13 09:16:49 +07:00  Đang chờ ứng dụng khởi động, lần 1/30...
+2026-10-13 09:16:51 +07:00  Đang chờ ứng dụng khởi động, lần 2/30...
+2026-10-13 09:16:53 +07:00  {"status":"UP"}
+2026-10-13 09:16:53 +07:00  HTTP 200
+2026-10-13 09:16:53 +07:00  Ứng dụng đã sẵn sàng trên cổng 8080.
+CONTAINER ID   IMAGE                           STATUS         PORTS                                         NAMES
+5bc4e77109da   ghcr.io/crouan244/app:latest      Up 5 seconds   0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp      app
+2026-10-13 09:16:54 +07:00  Successfully executed commands to all hosts.
+2026-10-13 09:16:55 +07:00  deploy-vps: Success.

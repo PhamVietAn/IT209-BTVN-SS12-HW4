@@ -1,0 +1,11 @@
+DỮ LIỆU MÔ PHỎNG - KHÔNG PHẢI PHẢN HỒI TỪ VPS THẬT
+URL minh họa: http://203.0.113.24:8080/actuator/health
+IP 203.0.113.24 được dành cho tài liệu, không phải IP VPS đang hoạt động.
+
+$ curl -i http://203.0.113.24:8080/actuator/health
+HTTP/1.1 200
+Content-Type: application/vnd.spring-boot.actuator.v3+json
+Transfer-Encoding: chunked
+Date: Tue, 13 Oct 2026 02:17:00 GMT
+
+{"status":"UP"}

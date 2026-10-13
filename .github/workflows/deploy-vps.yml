@@ -1,0 +1,107 @@
+name: Build và triển khai Spring Boot lên VPS
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-vps-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-image:
+    name: Build và đẩy image lên GHCR
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Chuẩn hóa tên image thành chữ thường
+        id: image
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: echo "image=ghcr.io/${OWNER,,}/app" >> "$GITHUB_OUTPUT"
+
+      - name: Thiết lập Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Đăng nhập GHCR trên runner
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build và đẩy Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.image.outputs.image }}:latest
+            ${{ steps.image.outputs.image }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+
+  deploy-vps:
+    name: Triển khai lên VPS qua SSH
+    needs: build-image
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Thực thi câu lệnh triển khai trên VPS qua SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE: ${{ needs.build-image.outputs.image }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: GHCR_USER,GHCR_TOKEN,IMAGE
+          command_timeout: 8m
+          script_stop: true
+          script: |
+            set -eu
+
+            taskDockerConfig=$(mktemp -d)
+            export DOCKER_CONFIG="$taskDockerConfig"
+            trap 'rm -rf "$taskDockerConfig"' EXIT
+
+            printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+            docker pull "$IMAGE:latest"
+
+            docker stop app || true
+            docker rm app || true
+            docker run -d --name app --restart unless-stopped -p 8080:8080 "$IMAGE:latest"
+
+            attempt=1
+            while [ "$attempt" -le 30 ]; do
+              if curl --fail --silent --show-error --max-time 5 \
+                --write-out '\nHTTP %{http_code}\n' \
+                http://127.0.0.1:8080/actuator/health; then
+                echo "Ứng dụng đã sẵn sàng trên cổng 8080."
+                docker ps --filter 'name=^/app$'
+                exit 0
+              fi
+              echo "Đang chờ ứng dụng khởi động, lần $attempt/30..."
+              attempt=$((attempt + 1))
+              sleep 2
+            done
+
+            echo "Kiểm tra sức khỏe thất bại sau 30 lần thử."
+            docker logs --tail 100 app
+            exit 1

@@ -1,0 +1,15 @@
+KẾT QUẢ KIỂM TRA THẬT TẠI MÁY CỤC BỘ
+Thời gian: 2026-10-13 23:06:22 +07:00
+Ứng dụng: ex04/target/app.jar
+Java: 21.0.11
+Build trước khi kiểm tra: Maven 3.9.9, mvn --batch-mode package, BUILD SUCCESS.
+URL kiểm tra: http://127.0.0.1:52578/actuator/health
+HTTP status: 200
+Content-Type: application/vnd.spring-boot.actuator.v3+json
+Nội dung: {"status":"UP"}
+Kết quả: Đạt, ứng dụng khởi động và trả về HTTP 200 với trạng thái UP.
+
+Đây là kiểm tra ứng dụng Java tại máy cục bộ, chưa xác minh Docker Image,
+GitHub Environments, GHCR hoặc triển khai SSH trên VPS.
+Docker Engine trên máy không hoạt động khi thực hiện bài tập.
+Ứng dụng đã được dừng sau khi hoàn tất kiểm tra.
